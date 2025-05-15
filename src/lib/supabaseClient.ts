@@ -21,7 +21,6 @@ if (typeof window === 'undefined') { // Log only on the server-side
   console.log('-------------------------------------------------------------');
 }
 
-
 if (!supabaseUrl) {
   // This error will halt the application if thrown on the server during module load.
   throw new Error("CRITICAL: Missing env.NEXT_PUBLIC_SUPABASE_URL. Check .env.local and ensure the server was restarted.");
@@ -31,6 +30,22 @@ if (!supabaseAnonKey) {
 }
 
 export const supabase: SupabaseClient = createClient(supabaseUrl, supabaseAnonKey);
+
+// Real-time subscription example (optional, for client-side only)
+if (typeof window !== 'undefined') {
+  // Example: Listen for changes in the 'projects' table
+  supabase
+    .channel('public:projects') // Replace 'projects' with your table name
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'projects' },
+      (payload) => {
+        console.log('Real-time change detected!', payload);
+        // You can add logic here to update the UI dynamically
+      }
+    )
+    .subscribe();
+}
 
 if (typeof window === 'undefined') {
     console.log('[SupabaseClient] Supabase client instance successfully created on the server.');
